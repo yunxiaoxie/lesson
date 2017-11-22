@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <title>title</title>
+
+    <!--[if lt IE 9]> HTML5Shiv
+        <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <style>
+    body {
+        margin: 0;
+        padding: 0;
+        text-align: center;
+        width: 100%;
+
+    }
+    .container {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+    }
+
+    #canvas {
+        display: block;
+        padding: 0;
+        margin: 0 auto;
+
+        background-color:red;
+    }
+
+    @media(max-width:1200px) {
+        .container {
+            margin: 0 50px;
+        }
+        #canvas {
+            width: 100%;
+            height: auto;
+            background-color:red;
+        }
+    }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <canvas width=1100 height=850 id="canvas"></canvas>
+    </div>
+</body>
