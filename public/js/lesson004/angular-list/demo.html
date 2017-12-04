@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+<html ng-app="App"> 
+<head>
+<title>软谋教育</title>
+<link href="css/bootstrap.css" rel="stylesheet" />
+<link href="css/demo.css" rel="stylesheet" />
+<script src="js/angular.js"></script>
+<script src="js/demo.js"></script> 
+<!-- <script>
+  var todoApp = angular.module("App",[]);//声明模块
+  todoApp.controller('ToDoCtrl',function($scope) {
+    $scope.myname="张三";
+  })
+</script> -->
+
+</head>
+<body ng-controller="ToDoCtrl">
+  <!-- <p>名字：<input type="text" ng-model="name"/></p>
+  <p>{{name}}</p> -->
+  <!-- <h1>{{myname}}</h1> -->
+
+
+
+  <div class="page-header">
+    <div>
+      <h1>{{todo.user}}的购物清单列表</h1>
+        <span>清单总数
+          <botton class="label label-warning" >{{todo.items.length}}</botton>
+        </span>
+        <span>未采购数
+          <botton class="label label-success">{{count}}</botton>
+        </span>
+    </div>  
+  </div>
+  <div class="panel">
+    <div class="input-group">
+      <input class="form-control" ng-model="actionText" />
+      <span class="input-group-btn">
+        <button class="btn btn-default" ng-click="addNewItem(actionText)">添加</button>
+      </span>
+    </div>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>清单名称</th>
+          <th>已采购</th>
+          <th>状态</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="item in todo.items ">
+          <td>{{item.action}}</td>
+          <td><input type="checkbox" ng-model="item.state" ng-change="notPurchaseCount()"/></td>
+          <td>{{item.state}}</td>
+        </tr>
+      </tbody>
+    </table>
+</div>
+</body>
+</html>
+
+
