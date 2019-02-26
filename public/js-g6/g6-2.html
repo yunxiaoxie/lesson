@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>工作流</title>
+    <style>::-webkit-scrollbar{display:none;}html,body{overflow:hidden;margin:0;}</style>
+</head>
+<body>
+<div id="toolBar" style="position: absolute;z-index: 10">
+        <button id="addCircle">新增圆</button>
+        <button id="addRect">新增矩形</button>
+        <button id="delete">删除选中</button>
+        <button id="addCustom1">自定义形1</button>
+        <button id="addCustom2">自定义形2</button>
+        <button id="addCustom3">自定义形3</button>
+        <button id="addLine">添加直线</button>
+        <button id="addArrowLine">添加箭头直线</button>
+        <button id="addSmooth">添加曲线</button>
+        <button id="drag">拖拽模式</button>
+        <button id="edit">编辑模式</button>
+        <button id="consoleJSON">输出json</button>
+        <button id="downloadImage">保存图片</button>
+        <button id="clearView">清空视图</button>
+        <button id="reLayout">自动布局</button>
+        <label>视图方向:
+            <select id="ViewLy">
+                <option selected value="TB">上下</option>
+                <option value="BT">下上</option>
+                <option value="LR">左右</option>
+                <option value="RL">右左</option>
+            </select>
+        </label>
+    </div>
+<div id="mountNode"></div>
+<script>/*Fixing iframe window.innerHeight 0 issue in Safari*/document.body.clientHeight;</script>
+<script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-2.2.0/build/g6.js"></script>
+<script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-2.2.0/build/plugins.js"></script>
+<script>
+  //自定义形状
+  G6.registerNode('rect', {
+    getPath: function getPath(item) {
+      var width = 100; // 一半宽
+      var height = 40; // 一半高
+      return G6.Util.getRectPath(-width / 2, -height / 2, width, height, 10);
+    }
+  });
+  var data = {
+    nodes: [{//节点信息
+          id: '收集日志'
+      }, {
+          id: '入 es 集群'
+      }, {
+          id: '入 hdfs'
+      }, {
+          id: 'hive 计算'
+      }, {
+          id: 'report'
+      }],
+    edges: [{//节点连线
+          source: '收集日志',
+          target: '入 es 集群'
+      }, {
+          source: '收集日志',
+          target: '入 hdfs'
+      }, {
+          source: '入 hdfs',
+          target: 'hive 计算'
+      }, {
+          source: '入 es 集群',
+          target: 'hive 计算'
+      }, {
+          source: 'hive 计算',
+          target: 'report'
+      }]
+  };
+  var graph = new G6.Graph({//实例化图形
+    container: 'mountNode',//图形dom
+    fitView: 'cc',//图形位置 centercenter
+    height: window.innerHeight, // 画布高
+    plugins: [new G6.Plugins['layout.dagre']()],//有向分层图布局
+    defaultIntersectBox: 'rect' // 使用矩形包围盒
+  });
+
+  graph.node({//图形节点
+    shape: 'rect',//节点形状
+    label: function label(model) {//节点标签
+      return model.id;
+    },
+
+    style: {
+      stroke: '#00C0A5',//画笔颜色
+      fill: '#92949F',//填充颜色
+      fillOpacity: 0.45,//透明度
+      lineWidth: 2//边框宽度
+    }
+  });
+  graph.edge({//连接线
+    style: {
+      endArrow: true//结束箭头
+    }
+  });
+  graph.read(data);
+</script>
+</body>
+</html>

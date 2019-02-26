@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>插件：统一分层布局</title>
+    <style>
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        html,
+        body {
+            overflow: hidden;background-color: #ffffff
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toolBar" style="position: absolute;z-index: 10">
+        <button id="addCircle">新增圆</button>
+        <button id="addRect">新增矩形</button>
+        <button id="delete">删除选中</button>
+        <button id="addCustom1">自定义形1</button>
+        <button id="addCustom2">自定义形2</button>
+        <button id="addCustom3">自定义形3</button>
+        <button id="addLine">添加直线</button>
+        <button id="addArrowLine">添加箭头直线</button>
+        <button id="addSmooth">添加曲线</button>
+        <button id="drag">拖拽模式</button>
+        <button id="edit">编辑模式</button>
+        <button id="consoleJSON">输出json</button>
+        <button id="downloadImage">保存图片</button>
+        <button id="clearView">清空视图</button>
+        <button id="reLayout">自动布局</button>
+        <label>视图方向:
+            <select id="ViewLy">
+                <option selected value="TB">上下</option>
+                <option value="BT">下上</option>
+                <option value="LR">左右</option>
+                <option value="RL">右左</option>
+            </select>
+        </label>
+    </div>
+    <div id="mountNode"></div>
+    <script>/*Fixing iframe window.innerHeight 0 issue in Safari*/document.body.clientHeight;</script>
+    <script src="https://cdn.bootcss.com/html2canvas/0.5.0-beta4/html2canvas.min.js"></script>
+    <script src="https://gw.alipayobjects.com/os/antv/assets/g6/1.2.5/g6.min.js"></script>
+    <script src="https://gw.alipayobjects.com/os/antv/assets/lib/jquery-3.2.1.min.js"></script>
+    <script src="https://gw.alipayobjects.com/os/antv/assets/g6-plugins/1.0.1/g6-plugins.min.js"></script>
+    <script> 
+        var Util = G6.Util;
+        //创建编辑层dom
+        var input = Util.createDOM('<input class="g6-label-input" />', {
+            position: 'absolute',
+            zIndex: 10,
+            display: 'none'
+        });
+
+        function hasClass(shape, className) {
+            if (shape) {
+                const clasees = shape.get('class');
+                if (clasees && clasees.indexOf(className) !== -1) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function showInputLabel(node) {
+            if (!node) {
+                return;
+            }
+            const group = node.get('group');//得到节点的分组
+            const label = group.findBy(function (child) {//从分组中得到有label的节点
+                if (hasClass(child, 'label')) {
+                    return true;
+                }
+                return false;
+            });
+            //从根节点中得到当前节点的dom
+            const rootGroup = net.get('rootGroup');
+            const bbox = Util.getBBox(label, rootGroup);
+            const borderWidth = 1;//编辑框宽度
+            const text = label.attr('text');
+            //clearAllActived();
+
+            //把text给编辑表单并显示表单
+            input.value = text;
+            input.show();
+            input.css({
+                top: bbox.minY - borderWidth + 'px',
+                left: bbox.minX - borderWidth + 'px',
+                width: bbox.width + 'px',
+                height: bbox.height + 'px',
+                padding: '0px',
+                margin: '0px',
+                border: borderWidth + 'px solid #999'
+            });
+            input.focus();
+            //for updateLabel
+            input.node = node;
+        }
+
+        function updateLabel() {
+            if (input.visibility) {
+                const node = input.node;
+                clearAllActived();
+                if (input.value !== node.get('model').name) {
+                    if (input.value) {
+                        net.update(node, {
+                            label: input.value
+                        });
+                    }
+                }
+                input.hide();
+            }
+        }
+
+        function clearAllActived() {
+            //net.clearAllActived();
+            //net.refresh(false);
+        }
+        input.hide = function () {
+            //隐藏input中内容
+            input.css({
+                display: 'none'
+            });
+            //隐藏input
+            input.visibility = false;
+        };
+        //visibility要占用域的空间，而display则不占用。
+        input.show = function () {
+            input.css({
+                display: 'block'
+            });
+            input.visibility = true;
+        };
+        //修改表单内容后回车更新
+        input.on('keydown', ev => {
+            if (ev.keyCode === 13) {
+                updateLabel();
+            }
+        });
+
+        input.on('blur', () => {
+            updateLabel();
+        });
+    </script>
+    <script type="text/javascript">
+        //自定义节点
+        G6.registerNode('customNode1', {
+            //图形边框上的锚点
+            getAnchorPoints() {
+                return [
+                    [0, 0.25],
+                    [0, 0.5],
+                    [0, 0.75],
+                    [1, 0.25],
+                    [1, 0.5],
+                    [1, 0.75],
+                    [0.25, 0],
+                    [0.5, 0],
+                    [0.75, 0],
+                    [0.25, 1],
+                    [0.5, 1],
+                    [0.75, 1]
+                ];
+            }
+        }, 'rect');//注册自定义节点 https://antv.alipay.com/zh-cn/g6/1.x/api/index.html#_registerNode
+        //const plugin = new G6.Plugins['layout.dagre']();//有向分层图布局
+        var data = {
+            nodes: [
+                { id: '0', label: '起始', shape: 'circle', size: 40 },
+                { id: '1', label: '步骤一' },
+                { id: '2', label: '步骤二' },
+                { id: '3', label: '条件' },
+                { id: '4.1', label: '分步骤一' },
+                { id: '4.2', label: '分步骤二' },
+                { id: '5', label: '汇总' },
+                { id: '6', label: '结束', shape: 'circle', size: 40 },
+            ],
+            edges: [
+                { id: '0-1', source: '0', target: '1' },
+                { id: '1-2', source: '1', target: '2' },
+                { id: '2-3', source: '2', target: '3' },
+                { id: '3-4.1', source: '3', target: '4.1' },
+                { id: '3-4.2', source: '3', target: '4.2' },
+                { id: '4.1-5', source: '4.1', target: '5' },
+                { id: '4.2-5', source: '4.2', target: '5' },
+                { id: '5-6', source: '5', target: '6' },
+            ]
+        };
+        var net = null;
+        var sel = null;
+        function reLoadNet(v) {
+            const layout_dagre = new G6.Plugins['layout.dagre']({
+                rankdir: v,//布局方向 可取值为： 'TB', 'BT', 'LR', or 'RL' 默认值为 'TB'
+                //nodesep:10,//节点间距
+                // useEdgeControlPoint:false,//生成边控制点 默认值为 true
+            });
+            if (net) {
+                data = net.save().source;
+                net.destroy();
+                net = null
+            };
+            // preview.minimap = new G6.Plugins['tool.minimap']();
+            //http://antvis.github.io/g6/api/net.html
+            //http://antvis.github.io/g6/doc/tutorial/start/net.html
+            net = new G6.Net({//网图类
+                id: 'mountNode',              // 容器ID
+                mode: 'edit',  // 编辑模式
+                //fitView: 'cc', // 自适应窗口默认为左上
+                height: window.innerHeight,    // 画布高
+                fitView: 'autoZoom', //自动缩放
+                grid: {//背景网格
+                    forceAlign: true, // 是否支持网格对齐
+                    cell: 10,         // 网格大小 
+                },
+                plugins: [layout_dagre],
+            });
+            //装载数据
+            if (data) net.source(data.nodes, data.edges);
+            const graphContainer = net.get('graphContainer');
+            //添加input元素
+            graphContainer.appendChild(input);
+            //取消右键
+            graphContainer.oncontextmenu = function (e) { return false; }
+
+            net.tooltip({
+                title: '节点信息', // @type {String} 标题
+                split: ':',  // @type {String} 分割符号
+                dx: 10,       // @type {Number} 水平偏移
+                dy: 10        // @type {Number} 竖直偏移
+            });
+            net.node().tooltip(['id', 'label']);
+            net.edge().tooltip(['id', 'label']);
+            net.render();
+        }
+        reLoadNet();
+
+        net.on('contextmenu', ev => {// 鼠标右键点击事件
+            console.log("选中类型:", ev.itemType);
+            console.log(ev);
+        });
+
+        net.on('itemmouseenter', ev => {
+            const item = ev.item;
+            net.update(item, {
+                color: 'red',
+            });
+            net.refresh();
+        });
+        net.on('itemmouseleave', ev => {
+            const item = ev.item;
+            net.update(item, {
+                color: null
+            });
+            net.refresh();
+        });
+        net.on('itemmousedown', ev => {
+            const item = ev.item;
+            net.update(item, {
+                color: '#9ef'
+            });
+        });
+        net.on('itemmouseup', ev => {
+            const item = ev.item;
+            net.update(item, {
+                color: 'null'
+            });
+        });
+
+        //net.on('dragmove', () => {
+            //input.hide();//隐藏拖动的虚框
+        //});
+
+        net.on('dblclick', ev => {
+            const item = ev.item;
+            const shape = ev.shape;
+            if (hasClass(shape, 'label') && item && item.get('type') === 'node') {
+                showInputLabel(item);
+            }
+        });
+        net.on('itemactived', ev => {
+            sel=ev.item;
+        });
+
+        net.on('itemunactived', ev => {
+            sel = null;
+        });
+
+        var i = 1;
+        $('#addCircle').on('click', () => {//添加圆形节点
+            net.add('node', {
+                shape: 'circle',
+                id: 'id' + i++,
+                x: 50 + i * 10,
+                y: 50 + i * 10
+            });
+            net.refresh();
+        });
+
+        $('#addRect').on('click', () => {//添加矩形
+            net.add('node', {
+                shape: 'rect',
+                id: 'id' + i++,
+                x: 50 + i * 10,
+                y: 50 + i * 10
+            });
+            net.refresh();
+        });
+
+        $('#delete').on('click', () => {//删除
+            if (sel) {
+                net.remove(sel);
+            }
+            sel=null;
+            // if (i > 1) {
+            //     i = i - 1;
+            //     const item = net.find('id' + i);
+            //     net.remove(item);
+            //     net.refresh();
+            // }
+        });
+
+        $('#addCustom1').on('click', () => {//添加自定义节点图形
+            net.beginAdd('node', {
+                shape: 'circle'
+            });
+        });
+
+        $('#addCustom2').on('click', () => {//添加自定义节点图形
+            net.beginAdd('node', {});
+        });
+
+        $('#addCustom3').on('click', () => {//添加自定义节点图形
+            net.beginAdd('node', {
+                shape: 'customNode1'//<====
+            });
+        });
+
+        $('#addLine').on('click', () => {//添加普通直线
+            net.beginAdd('edge', {
+                shape: 'line'//<====
+            });
+        });
+
+        $('#addArrowLine').on('click', () => {//添加箭头直线
+            net.beginAdd('edge', {
+                shape: 'arrow'//<====
+            });
+        });
+
+        $('#addSmooth').on('click', () => {//添加曲线
+            net.beginAdd('edge', {
+                shape: 'smooth'//<====
+            });
+        });
+
+        $('#drag').on('click', () => {//拖拽模式
+            net.changeMode('drag');
+        });
+
+        $('#edit').on('click', () => {//编辑模式
+            net.changeMode('edit');
+        });
+
+        $('#consoleJSON').on('click', () => {//控制台输入json
+            const saveData = net.save();
+            const json = JSON.stringify(saveData, null, 2);
+            console.log(saveData, json); // eslint-disable-line no-console
+        });
+
+        $("#downloadImage").on('click', (bool) => {
+            const matrixStash = net.getMatrix(); // 缓存当前矩阵
+            if (bool) {
+                net.autoZoom(); // 图自动缩放以适应画布尺寸
+            }
+            html2canvas(net.get('graphContainer'), {
+                onrendered(canvas) {
+                    const dataURL = canvas.toDataURL('image/png');
+                    const link = document.createElement('a');
+                    const saveName = '图片' + ('.png' || 'graph.png');//<====选中模块名称
+                    link.download = saveName;
+                    link.href = dataURL.replace('image/png', 'image/octet-stream');
+                    link.click();
+                    net.updateMatrix(matrixStash); // 还原矩阵
+                    net.refresh();
+                }
+            });
+        });
+        $("#clearView").click(() => {
+            net.changeData();
+        });
+        $("#reLayout").on('click', () => {
+            var a = net.save();
+            net.changeData();
+            a.source.edges.forEach((v, i, a) => {
+                delete v.x;
+                delete v.y;
+            });
+            a.source.nodes.forEach((v, i, a) => {
+                delete v.x;
+                delete v.y;
+            });
+            net.source(a.source.nodes, a.source.edges);
+            net.render();
+        });
+        $("#ViewLy").change(function () {
+            reLoadNet(this.value);
+        });
+    </script>
+</body>
+
+</html>
+
+<!-- https://antv.alipay.com/zh-cn/g6/1.x/demo/editor/mind.html
+ -->
