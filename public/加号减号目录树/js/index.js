@@ -1,11 +1,12 @@
 /*
+//jq
 $(function() {
 	$(".i_item").hide();
 	//展开当前且+-变更，默认第一个显示
 	$(".m_item").find(".i_item").eq(0).show();
 	$(".item_title").find("b").not(":eq(0)").text("+");
 	$(".item_title").click(function() {
-		$(".i_item").slideUp();
+		$(".i_item").slideUp();//隐藏所有
 		if($(this).next().is(":visible")){
 			$(this).next().slideUp();  //隐藏
 			$(this).find('b').text('+');
@@ -15,10 +16,8 @@ $(function() {
 			$(this).find('b').text('-');
 		}
 	});
-
 })
 */
-
 
 
 function hideAll() {
@@ -28,8 +27,10 @@ function hideAll() {
     });
 }
 
+//复位+号
 function resetStatus(itemTitles, targetTitle) {
     itemTitles.forEach(function(item, i){
+        //1==>title, 0==>+-
         if (item.children[1].innerHTML !== targetTitle) {
             item.children[0].innerHTML = '+';
         }
@@ -54,19 +55,22 @@ function dirTree () {
     //event
     itemTitles.forEach(function(item, i){
         item.onclick = function(e){
-            hideAll();
+            //hideAll(); //立即隐藏所有
             resetStatus(itemTitles, e.currentTarget.children[1].innerHTML);
             if (e.currentTarget.nextElementSibling.style.display == 'block') {
-                e.currentTarget.nextElementSibling.style.display = 'none';
+                //e.currentTarget.nextElementSibling.style.display = 'none';
                 e.currentTarget.children[0].innerHTML = '+';
+                slideUp(e.currentTarget.nextElementSibling, 500);
             } else {
-                e.currentTarget.nextElementSibling.style.display = 'block';
+                //e.currentTarget.nextElementSibling.style.display = 'block';
                 e.currentTarget.children[0].innerHTML = '-';
+                slideDown(e.currentTarget.nextElementSibling, 500);
             }
         }
     });
 }
 
+//缓慢隐藏
 function slideUp(element, time) {
     // 获取元素总高度
     var totalHeight = element.offsetHeight;
@@ -91,7 +95,7 @@ function slideUp(element, time) {
         }
     }, 10);
 }
-
+//缓慢展开
 function slideDown(element, time) {
     // 获取元素总高度
     element.style.display = "block";            // 1.显示元素，元素变为可见

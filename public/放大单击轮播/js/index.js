@@ -3,7 +3,10 @@ $(function() {
 	var currentIndex;
 	var _img = $(".list img");
 	$.each(_img,function(index,item){
-		data.push('<li data-id="'+$(item).attr("index")+'"><img src="'+$(item).attr("src")+'"/></li>');
+		let idx = $(item).attr("index");
+		let src = $(item).attr("src");
+		//@@用字符串拼接会很长，不易读
+		data.push(`<li data-id=${idx}><img src='${src}'/></li>`);
 	})
 	$(".content-img").html(data.join(""));
 	//单击图片，弹层显示
@@ -22,7 +25,7 @@ $(function() {
 	//左按钮
 	$("#left").click(function() {
 		if(currentIndex == 0){
-			currentIndex =data.length-1;
+			currentIndex = data.length-1;
 			showImg(currentIndex);
 		}else {
 			showImg(--currentIndex);
@@ -32,7 +35,7 @@ $(function() {
 	//右按钮
 	$("#right").click(function() {
 		if(currentIndex == data.length-1){
-			currentIndex =0;
+			currentIndex = 0;
 			showImg(currentIndex);
 		}else {
 			showImg(++currentIndex);
