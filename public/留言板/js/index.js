@@ -1,4 +1,6 @@
 $(function() {
+	//@@sessionStorage
+	let storage = localStorage;
 	//提交留言
 	$(".submit").click(function() {
 		submit();
@@ -6,7 +8,7 @@ $(function() {
 
 	//删除留言
 	$(".deleteAll").click(function() {
-		 localStorage.clear();
+		 storage.clear();
 		 $(".messageList").html('全部数据已经清除');
 	});
 	//查看留言
@@ -21,20 +23,23 @@ $(function() {
 			alert('请输入信息！');
 			return false;
 		} 
-		localStorage.setItem(_name,_message);	
+		storage.setItem(_name, _message);	
 		$(".name,.message").val("");
 		listShow();
 	};
 	//列表显示
 	function listShow() {
 		var list = $(".messageList"),str = "";
-		if(localStorage.length > 0 ){
-			for(var i=0; i<localStorage.length; i++) {
-				var _name = localStorage.key(i),
-					_message = localStorage.getItem(_name);
+		if(storage.length > 0 ){
+			for(var i=0; i<storage.length; i++) {
+				var _name = storage.key(i),
+					_message = storage.getItem(_name);
+				str += `<li class="list-group-item">${_name}<span>说：</span>${_message}</li>`;
+				/*
 				str += '<li class="list-group-item">'+_name+
 						'<span>说：</span>'+_message+
 						'</li>';
+				*/
 			};
 			list.html(str);
 		}else {

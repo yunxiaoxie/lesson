@@ -2,7 +2,9 @@ $(function() {
 	var i =1;
 	//单击添加
 	$(".add").on('click',function() {
-		$(".rows").append('<li class="list-group-item list"><span class="badge delbtn">删除</span><input type="checkbox"/>'+i+'</li>');
+		//let str = '<li class="list-group-item list"><span class="badge delbtn">删除</span><input type="checkbox"/>'+i+'</li>';
+		let str = `<li class="list-group-item list"><span class="badge delbtn">删除</span><input type="checkbox"/>第${i}项</li>`;
+		$(".rows").append(str);
 		i++;
 		//callback();
 	})

@@ -1,5 +1,5 @@
 /*
-//jq
+//@@jq
 $(function() {
 	$(".i_item").hide();
 	//展开当前且+-变更，默认第一个显示
@@ -19,7 +19,7 @@ $(function() {
 })
 */
 
-
+//@@js
 function hideAll() {
     let items = document.querySelectorAll(".i_item");
     items.forEach(function(e){
